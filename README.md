@@ -2,8 +2,11 @@
 Coronavirus statistics module for Sopel
 
 Requirements:
-Python 3.6+
+
+Python 3.6
+
 Sopel
+
 `pip install country_converter`
 
 `pip install us`
