@@ -8,6 +8,17 @@ from sopel.formatting import *
 from sopel import bot
 
 
+def show_all_data():
+    all_json = requests.get('https://corona.lmao.ninja/all').json()
+    cases = all_json['cases']
+    deaths = all_json['deaths']
+    recovered = all_json['recovered']
+    last_updated = all_json['updated']
+
+    msg = f'Infected: {cases:,}, deaths: {deaths:,}, recovered: {recovered:,}'
+    return msg
+
+
 def show_country_data(search_string):
     countries_json = requests.get(
         'https://corona.lmao.ninja/countries').json()
@@ -74,7 +85,12 @@ def show_region_data(search_string):
 
 
 def return_message(search_string):
-    # first, check if string is a country and return message for countries
+    # if no country or region is entered, show global data
+    if not search_string:
+        global_message = show_all_data()
+        return global_message
+
+    # check if string is a country and return message for that country
     country_message = show_country_data(search_string)
     if country_message:
         return country_message
