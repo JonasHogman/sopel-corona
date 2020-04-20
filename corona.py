@@ -2,6 +2,7 @@ import requests
 import json
 import country_converter as coco
 import us
+import arrow
 from sopel.module import commands, example, NOLIMIT
 from sopel.tools import web
 from sopel.formatting import *
@@ -9,7 +10,7 @@ from sopel import bot
 
 
 def show_all_data():
-    all_json = requests.get('https://corona.lmao.ninja/all').json()
+    all_json = requests.get('https://corona.lmao.ninja/v2/all').json()
     cases = all_json['cases']
     deaths = all_json['deaths']
     recovered = all_json['recovered']
@@ -18,10 +19,9 @@ def show_all_data():
     msg = f'Infected: {cases:,}, deaths: {deaths:,}, recovered: {recovered:,}'
     return msg
 
-
 def show_country_data(search_string):
     countries_json = requests.get(
-        'https://corona.lmao.ninja/countries').json()
+        'https://corona.lmao.ninja/v2/countries').json()
     countries_list = [d['country'] for d in countries_json]
     matched_countries = coco.match(
         [search_string], countries_list, not_found='Not found')
@@ -35,35 +35,46 @@ def show_country_data(search_string):
                 deaths_today = country_dict['todayDeaths']
                 recovered = country_dict['recovered']
                 cases_per_mil = country_dict['casesPerOneMillion']
+                tests_per_mil = country_dict['testsPerOneMillion']
 
-                msg = f'Infected in {country}: {cases:,} (+{cases_today:,}), deaths: {deaths:,} (+{deaths_today:,}), recovered: {recovered:,}, cases per million people: {cases_per_mil:,}'
+                msg = f'Infected in {country}: {cases:,} (+{cases_today:,}), deaths: {deaths:,} (+{deaths_today:,}), recovered: {recovered:,}, cases per million people: {cases_per_mil:,}, tests per million people: {tests_per_mil:,}'
 
                 return msg
     else:
         return None
 
-
 def show_state_data(search_string):
     try:
-        state = us.states.lookup(search_string).name
+        state_abbr = us.states.lookup(search_string).abbr
+        state_name = us.states.lookup(search_string).name
     except AttributeError:
         return None
-    states_json = requests.get('https://corona.lmao.ninja/states').json()
-    state = us.states.lookup(search_string).name
+
+    states_json = requests.get(
+        'https://covidtracking.com/api/states').json()
+
     for state_dict in states_json:
-        if state_dict['state'] == state:
-            state = state_dict['state']
-            cases = state_dict['cases']
-            cases_today = state_dict['todayCases']
-            deaths = state_dict['deaths']
-            deaths_today = state_dict['todayDeaths']
-            msg = f'Infected in {state}: {cases:,} (+{cases_today:,}), deaths: {deaths:,} (+{deaths_today:,})'
+        if state_dict['state'] == state_abbr:
+            positive = state_dict['positive']
+            negative = state_dict['negative']
+            grade = state_dict['grade']
+            hospitalized = state_dict['hospitalized']
+            deaths = state_dict['death']
+            total_tests = state_dict['totalTestResults']
+            last_updated = arrow.get(
+                state_dict['dateModified']).humanize(granularity="hour")
+
+            if hospitalized:
+                msg = f'{state_name}: {positive:,} infected, {deaths:,} deaths, {hospitalized:,} hospitalized, {total_tests:,} tests done (reporting grade: {grade}). Last updated {last_updated}'
+            else:
+                msg = f'{state_name}: {positive:,} infected, {deaths:,} deaths, {total_tests:,} tests done (reporting grade: {grade}). Last updated {last_updated}'
+
             return msg
 
 
 def show_region_data(search_string):
     regions_json = requests.get(
-        'https://corona.lmao.ninja/jhucsse').json()
+        'https://corona.lmao.ninja/v2/jhucsse').json()
     regions_list = [d['province'].lower()
                     for d in regions_json if d['province']]
     if search_string.lower() in regions_list:
@@ -116,3 +127,13 @@ def return_message(search_string):
 def corona(bot, trigger):
     msg = return_message(trigger.group(2))
     bot.say(msg)
+
+@commands('coronachart', 'coronagraph', 'cgraph', 'cchart')
+@example('.coronachart')
+def coronachart(bot, trigger):
+    bot.say('https://coronachart.z22.web.core.windows.net/')
+
+
+
+
+
