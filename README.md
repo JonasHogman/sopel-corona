@@ -5,6 +5,7 @@ Requirements:
 
 * Python 3.6+
 * Sopel
+
 `pip install country_converter us requests arrow`
 
 
