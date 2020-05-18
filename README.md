@@ -5,8 +5,7 @@ Requirements:
 
 * Python 3.6+
 * Sopel
-* `pip install country_converter`
-* `pip install us`
-* `pip install requests`
+`pip install country_converter us requests arrow`
 
-This module uses the https://corona.lmao.ninja/ API, more information available at https://github.com/novelcovid/api
+
+This module uses the https://disease.sh/ API, more information available at https://github.com/novelcovid/api
