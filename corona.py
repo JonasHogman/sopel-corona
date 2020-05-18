@@ -4,7 +4,6 @@ import country_converter as coco
 import us
 import arrow
 from sopel.module import commands, example, NOLIMIT
-from sopel.tools import web
 from sopel.formatting import *
 from sopel import bot
 
