@@ -18,6 +18,7 @@ def show_all_data():
     msg = f'Infected: {cases:,}, deaths: {deaths:,}, recovered: {recovered:,}'
     return msg
 
+
 def show_country_data(search_string):
     countries_json = requests.get(
         'https://corona.lmao.ninja/v2/countries').json()
@@ -42,6 +43,7 @@ def show_country_data(search_string):
     else:
         return None
 
+
 def show_state_data(search_string):
     try:
         state_abbr = us.states.lookup(search_string).abbr
@@ -55,18 +57,16 @@ def show_state_data(search_string):
     for state_dict in states_json:
         if state_dict['state'] == state_abbr:
             positive = state_dict['positive']
-            negative = state_dict['negative']
-            grade = state_dict['grade']
+            positive_increase = state_dict['positiveIncrease']
             hospitalized = state_dict['hospitalized']
+            hospitalized_increase = state_dict['hospitalizedIncrease']
             deaths = state_dict['death']
+            deaths_increase = state_dict['deathIncrease']
             total_tests = state_dict['totalTestResults']
             last_updated = arrow.get(
                 state_dict['dateModified']).humanize(granularity="hour")
 
-            if hospitalized:
-                msg = f'{state_name}: {positive:,} infected, {deaths:,} deaths, {hospitalized:,} hospitalized, {total_tests:,} tests done (reporting grade: {grade}). Last updated {last_updated}'
-            else:
-                msg = f'{state_name}: {positive:,} infected, {deaths:,} deaths, {total_tests:,} tests done (reporting grade: {grade}). Last updated {last_updated}'
+            msg = f'Infected in {state_name}: {positive:,} (+{positive_increase:,}), deaths: {deaths:,} (+{deaths_increase}), hospitalized: {hospitalized:,} (+{hospitalized_increase}), tests: {total_tests:,}. Last updated {last_updated}'
 
             return msg
 
@@ -126,13 +126,3 @@ def return_message(search_string):
 def corona(bot, trigger):
     msg = return_message(trigger.group(2))
     bot.say(msg)
-
-@commands('coronachart', 'coronagraph', 'cgraph', 'cchart')
-@example('.coronachart')
-def coronachart(bot, trigger):
-    bot.say('https://coronachart.z22.web.core.windows.net/')
-
-
-
-
-
